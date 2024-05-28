@@ -1,4 +1,4 @@
-var web3 = new Web3('wss://mainnet.infura.io/ws');
+var web3 = new Web3('wss://mainnet.infura.io/ws/v3/PROJECT_KEY_HERE');
 
 var subscription;
 var nodes = [];
@@ -6,19 +6,23 @@ var links = [];
 
 function start() {
     console.log("Starting...")
-    var output = document.getElementById('output')
 
-    subscription = web3.eth.subscribe('pendingTransactions', function (error, result) {
-    })
-        .on("data", function (transactionHash) {
-            web3.eth.getTransaction(transactionHash)
-                .then(function (transaction) {
-                    if (transaction) {
-                        createNode(transaction.from, transaction.to);
-                    }
-                });
-        })
-    
+    const status = document.getElementById("status");
+    status.innerText = "Listening to blocks..."
+
+    subscription = web3.eth.subscribe('newBlockHeaders', (error, result) => {
+        if (error) console.error(error);
+    }).on("data", (blockHeader) => {
+        console.log("new block", blockHeader);
+        web3.eth.getBlock(blockHeader.hash, true).then(block => {
+            block.transactions.forEach(tx => {
+                if (tx.from && tx.to) {
+                    createNode(tx.from, tx.to);
+                } else {
+                    console.log(tx);
+                }
+            });
+        }).catch(console.error)});
 }
 
 function stop() {
@@ -28,8 +32,6 @@ function stop() {
         if (success)
             console.log('Successfully unsubscribed!');
     });
-
-
 }
 
 var track = {}
