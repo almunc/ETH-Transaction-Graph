@@ -4,11 +4,12 @@ var subscription;
 var nodes = [];
 var links = [];
 
+const statusEl = document.getElementById("status");
+
 function start() {
     console.log("Starting...")
 
-    const status = document.getElementById("status");
-    status.innerText = "Listening to blocks..."
+    statusEl.innerText = "Listening to new blocks..."
 
     subscription = web3.eth.subscribe('newBlockHeaders', (error, result) => {
         if (error) console.error(error);
@@ -26,11 +27,11 @@ function start() {
 }
 
 function stop() {
-    console.log("Stopping...")
-    // unsubscribes the subscription
     subscription.unsubscribe(function (error, success) {
         if (success)
-            console.log('Successfully unsubscribed!');
+            statusEl.innerText = "Press start, then click on a node to see the address!"
+        else
+            console.error(error);
     });
 }
 
